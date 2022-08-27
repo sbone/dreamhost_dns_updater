@@ -1,2 +1,6 @@
 # dreamhost_dns_updater
-Streamline updating of a Dreamhost DNS A record
+
+Update a Dreamhost domain's DNS A record if local public IP doesn't match
+
+usage: `./update.sh $dreamhost_api_key $domain_to_update`
+
