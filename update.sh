@@ -1,21 +1,23 @@
 #!/usr/bin/env bash
 
 # Update a Dreamhost domain's DNS A record if local public IP doesn't match
-# usage: ./update.sh $dreamhost_api_key $domain_to_updat	e
+# usage: ./update.sh
 
-api_key=$1
-target_domain=$2
+source .env
+
+api_key="$API_KEY"
+target_domain="$DOMAIN"
 
 if [ -n "$api_key" ]; then
-	echo "api_key set";
+	echo "✅ api_key";
 else
-	echo "Provide an api_key";
+	echo "❌ Provide an api_key";
 	exit 1;
 fi
 if [ -n "$target_domain" ]; then
-	echo "Domain to update: $target_domain"
+	echo "✅ Domain to update: $target_domain"
 else
-	echo "Provide a target_domain";
+	echo "❌ Provide a target_domain";
 	exit 1;
 fi
 
