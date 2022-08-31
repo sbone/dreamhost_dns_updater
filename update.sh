@@ -3,6 +3,8 @@
 # Update a Dreamhost domain's DNS A record if local public IP doesn't match
 # usage: ./update.sh
 
+# Get the script directory so we can call this from anywhere
+# https://stackoverflow.com/a/246128
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 
 source "$SCRIPT_DIR/.env"
