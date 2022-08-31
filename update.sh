@@ -3,7 +3,9 @@
 # Update a Dreamhost domain's DNS A record if local public IP doesn't match
 # usage: ./update.sh
 
-source .env
+SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
+
+source "$SCRIPT_DIR/.env"
 
 api_key="$API_KEY"
 target_domain="$DOMAIN"
