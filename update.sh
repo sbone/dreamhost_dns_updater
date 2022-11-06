@@ -38,7 +38,7 @@ fi
 
 # get your current public IP
 public_ip="`wget -O - -q icanhazip.com`"
-if [ -z $dry_run ]; then
+if [ -z "$dry_run" ]; then
   echo "DRY RUN Public IP: $public_ip"
 fi
 
