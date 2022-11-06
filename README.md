@@ -13,5 +13,5 @@ Uses the [Dreamhost DNS API](https://help.dreamhost.com/hc/en-us/articles/217555
 
 ## Usage
 
-1. run `./update.sh`
+1. run `./update.sh` (option `-d` flag for a dry run: for testing and debugging)
 
