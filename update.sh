@@ -38,13 +38,13 @@ fi
 
 # get your current public IP
 public_ip="`wget -O - -q icanhazip.com`"
-if [ -z "$dry_run" ]; then
+if [ -n "$dry_run" ]; then
   echo "DRY RUN Public IP: $public_ip"
 fi
 
 # extract the pertinent A record's IP address
 dns_record_ip="`wget -O- - -q "https://api.dreamhost.com/?key=$api_key&cmd=dns-list_records&type=A" | grep "\s$target_domain" | grep -oE "\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}"`"
-if [ -z "$dry_run" ]; then
+if [ -n "$dry_run" ]; then
   echo "DRY RUN DNS Record IP: $dns_record_ip"
 fi
 
@@ -70,7 +70,7 @@ else
 if [ -z "$dry_run" ]; then
   echo "DNS up-to-date; see ya!"
 else
-  echo "DRY RUN: DNS up-to-date; see ya!"
+  echo "DRY RUN: $timestamp | DNS up-to-date; see ya!"
 fi
 
 exit 0;
