@@ -28,12 +28,12 @@ timestamp=`date +"%Y-%m-%d %I:%M%p"`
 
 # config check; message and exit if there's a problem
 if [ -z "$api_key" ]; then
-	echo "❌ Provide an api_key";
-	exit 1;
+  echo "❌ Provide an api_key";
+  exit 1;
 fi
 if [ -z "$target_domain" ]; then
-	echo "❌ Provide a target_domain";
-	exit 1;
+  echo "❌ Provide a target_domain";
+  exit 1;
 fi
 
 # get your current public IP
@@ -50,7 +50,7 @@ fi
 
 # if the IPs don't match, we need to update Dreamhost, otherwise just bounce.
 if [ $public_ip != $dns_record_ip ]; then
-	echo "$timestamp | Updating DNS A record to $public_ip"
+  echo "$timestamp | Updating DNS A record to $public_ip"
   if [ -z "$dry_run" ]; then
     wget -O- - -q "https://api.dreamhost.com/?key=$api_key&cmd=dns-add_record&record=$target_domain&type=A&value=$public_ip"
     echo "$timestamp | Added DNS A record of value: $public_ip"
@@ -64,7 +64,7 @@ if [ $public_ip != $dns_record_ip ]; then
   else
     echo "DRY RUN: $timestamp | Removed DNS A record of value: $dns_record_ip"
   fi
-	exit 0;
+  exit 0;
 else
 
 if [ -z "$dry_run" ]; then
