@@ -68,7 +68,7 @@ if [ $public_ip != $dns_record_ip ]; then
 else
 
 if [ -z "$dry_run" ]; then
-  echo "DNS up-to-date; see ya!"
+  echo "$timestamp | DNS up-to-date; see ya!"
 else
   echo "DRY RUN: $timestamp | DNS up-to-date; see ya!"
 fi
