@@ -37,29 +37,29 @@ if [ -z "$target_domain" ]; then
 fi
 
 # get your current public IP
-public_ip="`wget -O - -q icanhazip.com`"
+public_ip=$(wget -O - -q https://icanhazip.com)
 if [ -n "$dry_run" ]; then
   echo "DRY RUN Public IP: $public_ip"
 fi
 
 # extract the pertinent A record's IP address
-dns_record_ip="`wget -O- - -q "https://api.dreamhost.com/?key=$api_key&cmd=dns-list_records&type=A" | grep "\s$target_domain" | grep -oE "\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}"`"
+dns_record_ip="`wget -O- -q "https://api.dreamhost.com/?key=$api_key&cmd=dns-list_records&type=A" | grep "\s$target_domain" | grep -oE "\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}"`"
 if [ -n "$dry_run" ]; then
   echo "DRY RUN DNS Record IP: $dns_record_ip"
 fi
 
 # if the IPs don't match, we need to update Dreamhost, otherwise just bounce.
-if [ $public_ip != $dns_record_ip ]; then
+if [[ $public_ip != $dns_record_ip ]]; then
   echo "$timestamp | Updating DNS A record to $public_ip"
   if [ -z "$dry_run" ]; then
-    wget -O- - -q "https://api.dreamhost.com/?key=$api_key&cmd=dns-add_record&record=$target_domain&type=A&value=$public_ip"
+    wget -O- -q "https://api.dreamhost.com/?key=$api_key&cmd=dns-add_record&record=$target_domain&type=A&value=$public_ip"
     echo "$timestamp | Added DNS A record of value: $public_ip"
   else
     echo "DRY RUN: $timestamp | Added DNS A record of value: $public_ip"
   fi
 
   if [ -z "$dry_run" ]; then
-    wget -O- - -q "https://api.dreamhost.com/?key=$api_key&cmd=dns-remove_record&record=$target_domain&type=A&value=$dns_record_ip"
+    wget -O- -q "https://api.dreamhost.com/?key=$api_key&cmd=dns-remove_record&record=$target_domain&type=A&value=$dns_record_ip"
     echo "$timestamp | Removed DNS A record of value: $dns_record_ip"
   else
     echo "DRY RUN: $timestamp | Removed DNS A record of value: $dns_record_ip"
@@ -69,9 +69,11 @@ else
 
 if [ -z "$dry_run" ]; then
   echo "$timestamp | DNS up-to-date; see ya!"
-else
-  echo "DRY RUN: $timestamp | DNS up-to-date; see ya!"
 fi
+# commented out for less logging
+# else
+#  echo "DRY RUN: $timestamp | DNS up-to-date; see ya!"
+#fi
 
 exit 0;
 fi
