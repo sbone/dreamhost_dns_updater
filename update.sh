@@ -1,16 +1,14 @@
 #!/usr/bin/env bash
-
-# Update a Dreamhost domain's DNS A record if local public IP doesn't match
-# usage: ./update.sh
-# options: -d "dry run" for testing and debugging
+# Update Dreamhost DNS A records if public IP changes
+# Supports multiple domains via .env
+# Usage: ./update.sh [-d]   (-d for dry-run)
 
 # Get the script directory so we can call this from anywhere
-# https://stackoverflow.com/a/246128
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
-
 source "$SCRIPT_DIR/.env"
 
-# check for -d option; set var accordingly
+# Check for -d option; set dry_run flag
+dry_run=false
 while getopts 'd' OPTION; do
   case "$OPTION" in
     d)
@@ -22,58 +20,54 @@ while getopts 'd' OPTION; do
   esac
 done
 
-api_key="$API_KEY"
-target_domain="$DOMAIN"
-timestamp=`date +"%Y-%m-%d %I:%M%p"`
-
-# config check; message and exit if there's a problem
-if [ -z "$api_key" ]; then
-  echo "❌ Provide an API_KEY in the .env file (See README.md)";
-  exit 1;
+# Config check
+if [ -z "$API_KEY" ]; then
+  echo "❌ Provide an API_KEY in .env"
+  exit 1
 fi
-if [ -z "$target_domain" ]; then
-  echo "❌ Provide a DOMAIN in the .env file (See README.md)";
-  exit 1;
+if [ -z "$DOMAINS" ]; then
+  echo "❌ Provide DOMAINS in .env (space-separated)"
+  exit 1
 fi
 
-# get your current public IP
+# Convert space-separated DOMAINS string to an array
+IFS=' ' read -r -a domains <<< "$DOMAINS"
+
+# Get public IP
 public_ip=$(wget -O - -q https://icanhazip.com)
-if [ -n "$dry_run" ]; then
+if [ "$dry_run" = true ]; then
   echo "DRY RUN Public IP: $public_ip"
 fi
 
-# extract the pertinent A record's IP address
-dns_record_ip="`wget -O- -q "https://api.dreamhost.com/?key=$api_key&cmd=dns-list_records&type=A" | grep "\s$target_domain" | grep -oE "\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}"`"
-if [ -n "$dry_run" ]; then
-  echo "DRY RUN DNS Record IP: $dns_record_ip"
-fi
+# Loop over each domain
+for target_domain in "${domains[@]}"; do
+  timestamp=$(date +"%Y-%m-%d %I:%M%p")
 
-# if the IPs don't match, we need to update Dreamhost, otherwise just bounce.
-if [[ $public_ip != $dns_record_ip ]]; then
-  echo "$timestamp | Updating DNS A record to $public_ip"
-  if [ -z "$dry_run" ]; then
-    wget -O- -q "https://api.dreamhost.com/?key=$api_key&cmd=dns-add_record&record=$target_domain&type=A&value=$public_ip"
-    echo "$timestamp | Added DNS A record of value: $public_ip"
-  else
-    echo "DRY RUN: $timestamp | Added DNS A record of value: $public_ip"
+  # Get current DNS A record for this domain
+  dns_record_ip=$(wget -O - -q "https://api.dreamhost.com/?key=$API_KEY&cmd=dns-list_records&type=A" \
+                   | grep "\s$target_domain" \
+                   | grep -oE "\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}")
+
+  if [ "$dry_run" = true ]; then
+    echo "DRY RUN DNS Record IP for $target_domain: $dns_record_ip"
   fi
 
-  if [ -z "$dry_run" ]; then
-    wget -O- -q "https://api.dreamhost.com/?key=$api_key&cmd=dns-remove_record&record=$target_domain&type=A&value=$dns_record_ip"
-    echo "$timestamp | Removed DNS A record of value: $dns_record_ip"
+  # Update if IP differs
+  if [[ "$public_ip" != "$dns_record_ip" ]]; then
+    echo "$timestamp | Updating DNS A record for $target_domain to $public_ip"
+
+    if [ "$dry_run" = false ]; then
+      # Add new record
+      wget -O- -q "https://api.dreamhost.com/?key=$API_KEY&cmd=dns-add_record&record=$target_domain&type=A&value=$public_ip"
+      echo "$timestamp | Added DNS A record of value: $public_ip"
+
+      # Remove old record
+      wget -O- -q "https://api.dreamhost.com/?key=$API_KEY&cmd=dns-remove_record&record=$target_domain&type=A&value=$dns_record_ip"
+      echo "$timestamp | Removed DNS A record of value: $dns_record_ip"
+    else
+      echo "DRY RUN: Would add $public_ip and remove $dns_record_ip for $target_domain"
+    fi
   else
-    echo "DRY RUN: $timestamp | Removed DNS A record of value: $dns_record_ip"
+    [ "$dry_run" = false ] && echo "$timestamp | $target_domain DNS up-to-date"
   fi
-  exit 0;
-else
-
-if [ -z "$dry_run" ]; then
-  echo "$timestamp | DNS up-to-date; see ya!"
-fi
-# commented out for less logging
-# else
-#  echo "DRY RUN: $timestamp | DNS up-to-date; see ya!"
-#fi
-
-exit 0;
-fi
+done

@@ -1,6 +1,6 @@
 # dreamhost_dns_updater
 
-Update a Dreamhost domain's DNS A record if local public IP doesn't match
+Update one or more Dreamhost domain DNS A records if local public IP doesn't match
 
 Depends on `wget`
 
@@ -9,7 +9,7 @@ Uses the [Dreamhost DNS API](https://help.dreamhost.com/hc/en-us/articles/217555
 ## Setup
 
 1. `cp .env.local .env`
-2. Fill in your Dreamhost API key ([found here](https://panel.dreamhost.com/?tree=home.api)) and domain in `.env`
+2. Fill in your Dreamhost API key ([found here](https://panel.dreamhost.com/?tree=home.api)) and domain(s) in `.env`
 
 ## Usage
 
