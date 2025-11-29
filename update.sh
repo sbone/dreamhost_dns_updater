@@ -28,11 +28,11 @@ timestamp=`date +"%Y-%m-%d %I:%M%p"`
 
 # config check; message and exit if there's a problem
 if [ -z "$api_key" ]; then
-  echo "❌ Provide an api_key";
+  echo "❌ Provide an API_KEY in the .env file (See README.md)";
   exit 1;
 fi
 if [ -z "$target_domain" ]; then
-  echo "❌ Provide a target_domain";
+  echo "❌ Provide a DOMAIN in the .env file (See README.md)";
   exit 1;
 fi
 
