@@ -93,7 +93,7 @@ for target_domain in "${domains[@]}"; do
   done < <(
     dreamhost_api dns-list_records "type=A" \
       | awk -F '\t' -v target="$target_domain" '
-          $1 == "A" && $3 == target && $2 ~ /^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$/ { print $2 }
+          $4 == "A" && $3 == target && $5 ~ /^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$/ { print $5 }
         '
   )
 

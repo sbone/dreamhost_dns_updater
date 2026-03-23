@@ -177,8 +177,11 @@ test_up_to_date_exact_match_only() {
   write_env "example.com"
   MOCK_PUBLIC_IP="9.9.9.9"
   cat > "$CASE_DIR/dns_list.txt" <<'EOF'
-A	9.9.9.9	example.com	-
-A	5.5.5.5	foo.example.com	-
+success
+account_id	zone	record	type	value	comment	editable
+100	example.com	example.com	A	9.9.9.9		1
+100	example.com	foo.example.com	A	5.5.5.5		1
+100	example.com	example.com	MX	10 mail.example.com.		1
 EOF
 
   run_update
@@ -195,9 +198,11 @@ test_adds_current_and_removes_multiple_stale_records() {
   write_env "example.com"
   MOCK_PUBLIC_IP="9.9.9.9"
   cat > "$CASE_DIR/dns_list.txt" <<'EOF'
-A	1.1.1.1	example.com	-
-A	2.2.2.2	example.com	-
-A	9.9.9.9	api.example.com	-
+success
+account_id	zone	record	type	value	comment	editable
+100	example.com	example.com	A	1.1.1.1		1
+100	example.com	example.com	A	2.2.2.2		1
+100	example.com	api.example.com	A	9.9.9.9		1
 EOF
   cat > "$CASE_DIR/add_responses.txt" <<'EOF'
 example.com|9.9.9.9|success	added
@@ -224,8 +229,10 @@ test_removes_stale_without_adding_when_current_ip_exists() {
   write_env "example.com"
   MOCK_PUBLIC_IP="9.9.9.9"
   cat > "$CASE_DIR/dns_list.txt" <<'EOF'
-A	9.9.9.9	example.com	-
-A	1.1.1.1	example.com	-
+success
+account_id	zone	record	type	value	comment	editable
+100	example.com	example.com	A	9.9.9.9		1
+100	example.com	example.com	A	1.1.1.1		1
 EOF
   cat > "$CASE_DIR/remove_responses.txt" <<'EOF'
 example.com|1.1.1.1|success	removed
@@ -245,8 +252,10 @@ test_dry_run_makes_no_api_changes() {
   write_env "example.com"
   MOCK_PUBLIC_IP="9.9.9.9"
   cat > "$CASE_DIR/dns_list.txt" <<'EOF'
-A	1.1.1.1	example.com	-
-A	2.2.2.2	example.com	-
+success
+account_id	zone	record	type	value	comment	editable
+100	example.com	example.com	A	1.1.1.1		1
+100	example.com	example.com	A	2.2.2.2		1
 EOF
 
   run_update -d
@@ -263,7 +272,9 @@ test_api_failure_stops_execution() {
   write_env "example.com"
   MOCK_PUBLIC_IP="9.9.9.9"
   cat > "$CASE_DIR/dns_list.txt" <<'EOF'
-A	1.1.1.1	example.com	-
+success
+account_id	zone	record	type	value	comment	editable
+100	example.com	example.com	A	1.1.1.1		1
 EOF
   cat > "$CASE_DIR/add_responses.txt" <<'EOF'
 example.com|9.9.9.9|error	add failed
@@ -277,6 +288,31 @@ EOF
   assert_not_contains "$OUTPUT" "Added DNS A record"
 }
 
+test_parses_real_dreamhost_list_format() {
+  create_case_dir
+  trap finish_case RETURN
+  write_env "snackintosh.club manage.snackintosh.club stats.snackintosh.club"
+  MOCK_PUBLIC_IP="70.59.71.238"
+  cat > "$CASE_DIR/dns_list.txt" <<'EOF'
+success
+account_id	zone	record	type	value	comment	editable
+1086870	snackintosh.club	manage.snackintosh.club	A	70.59.71.238		1
+1086870	snackintosh.club	stats.snackintosh.club	A	70.59.71.238		1
+1086870	snackintosh.club	snackintosh.club	A	70.59.71.238		1
+1086870	snackintosh.club	maintain.snackintosh.club	A	70.59.71.238		1
+EOF
+
+  run_update -d
+
+  [[ "$STATUS" -eq 0 ]] || fail "expected success"
+  assert_contains "$OUTPUT" "DRY RUN DNS Record IPs for snackintosh.club: 70.59.71.238"
+  assert_contains "$OUTPUT" "DRY RUN DNS Record IPs for manage.snackintosh.club: 70.59.71.238"
+  assert_contains "$OUTPUT" "DRY RUN DNS Record IPs for stats.snackintosh.club: 70.59.71.238"
+  assert_not_contains "$OUTPUT" "Would add 70.59.71.238 for snackintosh.club"
+  assert_not_contains "$OUTPUT" "Would add 70.59.71.238 for manage.snackintosh.club"
+  assert_not_contains "$OUTPUT" "Would add 70.59.71.238 for stats.snackintosh.club"
+}
+
 main() {
   local tests=(
     test_up_to_date_exact_match_only
@@ -284,6 +320,7 @@ main() {
     test_removes_stale_without_adding_when_current_ip_exists
     test_dry_run_makes_no_api_changes
     test_api_failure_stops_execution
+    test_parses_real_dreamhost_list_format
   )
 
   local test_name
