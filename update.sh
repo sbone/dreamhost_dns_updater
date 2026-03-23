@@ -87,7 +87,10 @@ fi
 for target_domain in "${domains[@]}"; do
   timestamp=$(date +"%Y-%m-%d %I:%M%p")
 
-  mapfile -t dns_record_ips < <(
+  dns_record_ips=()
+  while IFS= read -r dns_record_ip; do
+    [[ -n "$dns_record_ip" ]] && dns_record_ips+=("$dns_record_ip")
+  done < <(
     dreamhost_api dns-list_records "type=A" \
       | awk -F '\t' -v target="$target_domain" '
           $1 == "A" && $3 == target && $2 ~ /^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$/ { print $2 }
