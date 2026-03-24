@@ -291,26 +291,26 @@ EOF
 test_parses_real_dreamhost_list_format() {
   create_case_dir
   trap finish_case RETURN
-  write_env "snackintosh.club manage.snackintosh.club stats.snackintosh.club"
+  write_env "example.net app.example.net metrics.example.net"
   MOCK_PUBLIC_IP="70.59.71.238"
   cat > "$CASE_DIR/dns_list.txt" <<'EOF'
 success
 account_id	zone	record	type	value	comment	editable
-1086870	snackintosh.club	manage.snackintosh.club	A	70.59.71.238		1
-1086870	snackintosh.club	stats.snackintosh.club	A	70.59.71.238		1
-1086870	snackintosh.club	snackintosh.club	A	70.59.71.238		1
-1086870	snackintosh.club	maintain.snackintosh.club	A	70.59.71.238		1
+1086870	example.net	app.example.net	A	70.59.71.238		1
+1086870	example.net	metrics.example.net	A	70.59.71.238		1
+1086870	example.net	example.net	A	70.59.71.238		1
+1086870	example.net	ops.example.net	A	70.59.71.238		1
 EOF
 
   run_update -d
 
   [[ "$STATUS" -eq 0 ]] || fail "expected success"
-  assert_contains "$OUTPUT" "DRY RUN DNS Record IPs for snackintosh.club: 70.59.71.238"
-  assert_contains "$OUTPUT" "DRY RUN DNS Record IPs for manage.snackintosh.club: 70.59.71.238"
-  assert_contains "$OUTPUT" "DRY RUN DNS Record IPs for stats.snackintosh.club: 70.59.71.238"
-  assert_not_contains "$OUTPUT" "Would add 70.59.71.238 for snackintosh.club"
-  assert_not_contains "$OUTPUT" "Would add 70.59.71.238 for manage.snackintosh.club"
-  assert_not_contains "$OUTPUT" "Would add 70.59.71.238 for stats.snackintosh.club"
+  assert_contains "$OUTPUT" "DRY RUN DNS Record IPs for example.net: 70.59.71.238"
+  assert_contains "$OUTPUT" "DRY RUN DNS Record IPs for app.example.net: 70.59.71.238"
+  assert_contains "$OUTPUT" "DRY RUN DNS Record IPs for metrics.example.net: 70.59.71.238"
+  assert_not_contains "$OUTPUT" "Would add 70.59.71.238 for example.net"
+  assert_not_contains "$OUTPUT" "Would add 70.59.71.238 for app.example.net"
+  assert_not_contains "$OUTPUT" "Would add 70.59.71.238 for metrics.example.net"
 }
 
 main() {
